@@ -19,7 +19,7 @@ require('dotenv').config()
 
 
 console.log(process.env.DB_USER, process.env.DB_PASS)
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.mq0mae1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gjzedcz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -41,7 +41,7 @@ async function run() {
     await client.connect();
 
     // users related api 
-    app.post('/user', async(req,res)=>{
+    app.post('/users', async(req,res)=>{
 
       const user = req.body;
       const query = {email : user.email}
@@ -50,6 +50,32 @@ async function run() {
         return res.send({message:'user already exists',insertedId: null})
       }
       const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
+
+    app.get('/users',async(req,res)=>{
+      const result = await userCollection.find().toArray();
+      res.send(result)
+    })
+
+    // make admin 
+    app.delete('/users/admin/:id',async(req,res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId( id)};
+      const updateDoc ={
+        $set:{
+          role: 'admin'
+        }
+      }
+      const result = await userCollection.updateOne(filter,updateDoc);
+      res.send(result)
+
+    })
+
+    app.delete('/users/:id', async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId (id)}
+      const result = await userCollection.deleteOne(query);
       res.send(result);
     })
 
