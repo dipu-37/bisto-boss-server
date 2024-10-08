@@ -33,14 +33,28 @@ const client = new MongoClient(uri, {
 });
 async function run() {
   try {
+    const userCollection = client.db("BistoDb").collection("users");
     const menuCollection = client.db("BistoDb").collection("menu");
     const reviewsCollection = client.db("BistoDb").collection("reviews");
     await client.connect();
     const cartsCollection = client.db("BistoDb").collection("carts");
     await client.connect();
 
+    // users related api 
+    app.post('/user', async(req,res)=>{
 
-  //  manucollection 
+      const user = req.body;
+      const query = {email : user.email}
+      const existingUser = await userCollection.findOne(query)
+      if(existingUser){
+        return res.send({message:'user already exists',insertedId: null})
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
+
+
+  //  manucollection menu realated api
     app.get('/menu',async (req,res)=>{
       const result = await menuCollection.find().toArray();
       res.send(result);
